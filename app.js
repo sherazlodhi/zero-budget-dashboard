@@ -483,11 +483,21 @@ async function fetchAllData() {
             billsHtml += `
                 <tr>
                     <td><a href="${item.url}" target="_blank" style="color: var(--text-main); text-decoration: none; font-weight: 500;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${item.name}</a></td>
-                    <td class="num">${item.amount.toLocaleString()} ${item.currency}</td>
+                    <td class="num">${item.amount.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${item.currency}</td>
                     <td class="num" style="color: var(--accent-violet);">${dateStr}</td>
                 </tr>
             `;
         });
+
+        // Total row
+        const totalBills = upcomingItems.reduce((sum, item) => sum + item.amount, 0);
+        billsHtml += `
+            <tr style="border-top: 2px solid rgba(255,255,255,0.1);">
+                <td style="font-weight: 700; color: var(--text-main);">Total Due</td>
+                <td class="num" style="font-weight: 700; color: var(--accent-rose);">${totalBills.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} AED</td>
+                <td></td>
+            </tr>
+        `;
     }
     
     billsHtml += `</tbody></table></div>`;
