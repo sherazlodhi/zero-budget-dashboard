@@ -433,32 +433,37 @@ async function fetchAllData() {
         if (attr.account_role === 'ccAsset') {
             const bal = parseFloat(attr.current_balance || 0);
             if (bal < 0) {
-                // Firefly III disables 'monthly_payment_date' for Asset accounts. 
-                // We extract it from the Notes field instead (e.g. "Due: 15")
+                // Strategy 1: Use monthly_payment_date if Firefly ever fixes their API bug
                 let dueDay = null;
-                if (attr.notes) {
+                if (attr.monthly_payment_date) {
+                    dueDay = new Date(attr.monthly_payment_date).getDate();
+                }
+                
+                // Strategy 2: Parse from Notes field (e.g. "Due: 15")
+                if (dueDay === null && attr.notes) {
                     const match = attr.notes.match(/due:\s*(\d+)/i);
                     if (match) dueDay = parseInt(match[1]);
                 }
                 
-                if (dueDay !== null && dueDay >= 1 && dueDay <= 31) {
-                    let ccDate = new Date();
-                    ccDate.setHours(0,0,0,0);
-                    ccDate.setDate(dueDay);
-                    
-                    // Project CC date to next upcoming month if it has passed
-                    while (ccDate < today) {
-                        ccDate.setMonth(ccDate.getMonth() + 1);
-                    }
-                    
-                    upcomingItems.push({
-                        name: attr.name + ' Bill',
-                        amount: Math.abs(bal), // What they owe
-                        currency: attr.currency_symbol || 'AED',
-                        dateObj: ccDate,
-                        url: `${state.url}/accounts/show/${a.id}`
-                    });
+                // Strategy 3: Default to day 1 (all cards are due on the 1st)
+                if (dueDay === null) dueDay = 1;
+                
+                let ccDate = new Date();
+                ccDate.setHours(0,0,0,0);
+                ccDate.setDate(dueDay);
+                
+                // Project CC date to next upcoming occurrence if it has already passed
+                while (ccDate < today) {
+                    ccDate.setMonth(ccDate.getMonth() + 1);
                 }
+                
+                upcomingItems.push({
+                    name: attr.name + ' Bill',
+                    amount: Math.abs(bal),
+                    currency: attr.currency_symbol || 'AED',
+                    dateObj: ccDate,
+                    url: `${state.url}/accounts/show/${a.id}`
+                });
             }
         }
     });
