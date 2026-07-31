@@ -430,22 +430,35 @@ async function fetchAllData() {
     // Add Credit Card Due Dates dynamically
     accounts.forEach(a => {
         const attr = a.attributes;
-        if (attr.account_role === 'ccAsset' && attr.monthly_payment_date) {
+        if (attr.account_role === 'ccAsset') {
             const bal = parseFloat(attr.current_balance || 0);
             if (bal < 0) {
-                let ccDate = new Date(attr.monthly_payment_date);
-                // Project CC date to next upcoming month if it has passed
-                while (ccDate < today) {
-                    ccDate.setMonth(ccDate.getMonth() + 1);
+                // Firefly III disables 'monthly_payment_date' for Asset accounts. 
+                // We extract it from the Notes field instead (e.g. "Due: 15")
+                let dueDay = null;
+                if (attr.notes) {
+                    const match = attr.notes.match(/due:\s*(\d+)/i);
+                    if (match) dueDay = parseInt(match[1]);
                 }
                 
-                upcomingItems.push({
-                    name: attr.name + ' Bill',
-                    amount: Math.abs(bal), // What they owe
-                    currency: attr.currency_symbol || 'AED',
-                    dateObj: ccDate,
-                    url: `${state.url}/accounts/show/${a.id}`
-                });
+                if (dueDay !== null && dueDay >= 1 && dueDay <= 31) {
+                    let ccDate = new Date();
+                    ccDate.setHours(0,0,0,0);
+                    ccDate.setDate(dueDay);
+                    
+                    // Project CC date to next upcoming month if it has passed
+                    while (ccDate < today) {
+                        ccDate.setMonth(ccDate.getMonth() + 1);
+                    }
+                    
+                    upcomingItems.push({
+                        name: attr.name + ' Bill',
+                        amount: Math.abs(bal), // What they owe
+                        currency: attr.currency_symbol || 'AED',
+                        dateObj: ccDate,
+                        url: `${state.url}/accounts/show/${a.id}`
+                    });
+                }
             }
         }
     });
