@@ -379,11 +379,17 @@ async function fetchAllData() {
     const safeToSpend = globalAvailableAssets - totalRemainingBudgets;
     const safeColor = safeToSpend < 0 ? 'var(--accent-rose)' : 'var(--accent-emerald)';
     
-    // Prepend a master "Safe to Spend" summary card to accounts
+    // Update the master header badge
+    const masterSafeEl = document.getElementById('master-safe-amount');
+    if (masterSafeEl) {
+        masterSafeEl.textContent = `${safeToSpend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${mainCurrency}`;
+        masterSafeEl.className = 'master-safe-amount' + (safeToSpend < 0 ? ' negative' : '');
+    }
+    
+    // Prepend a compact "Safe to Spend" summary above the accounts table
     const safeHtml = `
-        <div style="font-size: 0.95rem; margin-bottom: 0.8rem; color: var(--text-main);">
-            <div>Master Global Safe to Spend: <span style="color: ${safeColor}; font-weight: 700; margin-left: 0.2rem; font-variant-numeric: tabular-nums;">${formatNegative(safeToSpend, mainCurrency)}</span></div>
-            <div style="color: var(--text-muted); margin-top: 0.2rem; font-size: 0.75rem; opacity: 0.8;">(${globalAvailableAssets.toLocaleString()} Assets - ${totalRemainingBudgets.toLocaleString()} Budgets)</div>
+        <div style="font-size: 0.85rem; margin-bottom: 0.8rem; color: var(--text-main);">
+            <div style="color: var(--text-muted); font-size: 0.72rem; opacity: 0.8;">(${globalAvailableAssets.toLocaleString()} Assets - ${totalRemainingBudgets.toLocaleString()} Budgets)</div>
         </div>
     `;
     
