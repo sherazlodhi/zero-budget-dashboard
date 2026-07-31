@@ -133,9 +133,8 @@ a {
 
 .logo-text {
     font-size: 1.25rem;
-    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-main);
+    font-weight: 600;
     white-space: nowrap;
 }
 
@@ -425,6 +424,11 @@ header h1 {
 .badge-rose {
     background: rgba(244, 63, 94, 0.15);
     color: var(--accent-rose);
+}
+
+.badge-emerald {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--accent-emerald);
 }
 
 /* --- Data Tables --- */

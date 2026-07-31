@@ -382,8 +382,8 @@ async function fetchAllData() {
     // Update the master header badge
     const masterSafeEl = document.getElementById('master-safe-amount');
     if (masterSafeEl) {
-        masterSafeEl.textContent = `${safeToSpend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${mainCurrency}`;
-        masterSafeEl.className = 'master-safe-amount' + (safeToSpend < 0 ? ' negative' : '');
+        masterSafeEl.textContent = `${safeToSpend.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} ${mainCurrency} Safe`;
+        masterSafeEl.className = 'badge ' + (safeToSpend < 0 ? 'badge-rose' : 'badge-emerald');
     }
     
     // Prepend a compact "Safe to Spend" summary above the accounts table
