@@ -182,7 +182,7 @@ header h1 {
 
 /* Drag Divider */
 .col-divider {
-    width: 12px;
+    width: 24px;
     flex-shrink: 0;
     cursor: col-resize;
     display: flex;
@@ -190,7 +190,7 @@ header h1 {
     justify-content: center;
     position: relative;
     z-index: 10;
-    margin: 0 4px;
+    margin: 0 6px;
 }
 
 .col-divider::before {
@@ -200,9 +200,9 @@ header h1 {
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 2px;
-    background: var(--card-border);
-    border-radius: 2px;
+    width: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 3px;
     transition: background 0.2s;
 }
 
@@ -218,22 +218,23 @@ header h1 {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 32px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    font-size: 0.65rem;
+    width: 24px;
+    height: 48px;
+    background: rgba(139, 92, 246, 0.2);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 8px;
+    color: var(--accent-violet);
+    font-size: 0.7rem;
     transition: all 0.2s;
     backdrop-filter: blur(8px);
     z-index: 1;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 .col-divider:hover .divider-handle {
-    color: var(--accent-violet);
+    background: rgba(139, 92, 246, 0.4);
     border-color: var(--accent-violet);
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
     transform: scaleY(1.1);
 }
 
@@ -268,6 +269,11 @@ header h1 {
     border-radius: 99px;
     font-size: 0.8rem;
     font-weight: 600;
+}
+
+.badge-rose {
+    background: rgba(244, 63, 94, 0.15);
+    color: var(--accent-rose);
 }
 
 /* --- Data Tables --- */

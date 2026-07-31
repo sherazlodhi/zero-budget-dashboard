@@ -498,6 +498,10 @@ async function fetchAllData() {
                 <td></td>
             </tr>
         `;
+
+        // Update the header badge
+        const billsTotalEl = document.getElementById('bills-total');
+        if (billsTotalEl) billsTotalEl.textContent = `${totalBills.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} AED Due`;
     }
     
     billsHtml += `</tbody></table></div>`;
