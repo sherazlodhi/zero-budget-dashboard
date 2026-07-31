@@ -72,54 +72,133 @@
                 <p class="subtitle">Your money, mathematically zeroed out.</p>
             </header>
 
-            <div class="bento-grid">
-                
-                <!-- Account Overview -->
-                <section class="card accounts-card glass-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-building-columns"></i> Asset Accounts</h3>
-                    </div>
-                    <div id="accounts-container" class="card-body">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </section>
+            <div class="two-col-layout">
 
-                <!-- Upcoming Bills -->
-                <section class="card bills-card glass-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-file-invoice-dollar"></i> Upcoming Bills</h3>
-                    </div>
-                    <div id="bills-container" class="card-body">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </section>
+                <!-- Left Column -->
+                <div class="col-panel" id="col-left">
+                    <!-- Account Overview -->
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-building-columns"></i> Asset Accounts</h3>
+                        </div>
+                        <div id="accounts-container" class="card-body">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </section>
 
-                <!-- Budgets & Categories -->
-                <section class="card budgets-card glass-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-chart-simple"></i> Monthly Budgets</h3>
-                        <span class="badge" id="budget-total-spent">0.00 AED Spent</span>
-                    </div>
-                    <div id="budgets-container" class="card-body">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </section>
+                    <!-- Budgets & Categories -->
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-chart-simple"></i> Monthly Budgets</h3>
+                            <span class="badge" id="budget-total-spent">0.00 AED Spent</span>
+                        </div>
+                        <div id="budgets-container" class="card-body">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </section>
+                </div>
 
-                <!-- Savings Goals -->
-                <section class="card piggybanks-card glass-card">
-                    <div class="card-header">
-                        <h3><i class="fa-solid fa-piggy-bank"></i> Savings Goals</h3>
-                    </div>
-                    <div id="piggybanks-container" class="card-body">
-                        <div class="loading-spinner"></div>
-                    </div>
-                </section>
-                
+                <!-- Drag Divider -->
+                <div class="col-divider" id="col-divider">
+                    <div class="divider-handle"><i class="fa-solid fa-grip-lines-vertical"></i></div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-panel" id="col-right">
+                    <!-- Upcoming Bills -->
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-file-invoice-dollar"></i> Upcoming Bills</h3>
+                        </div>
+                        <div id="bills-container" class="card-body">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </section>
+
+                    <!-- Savings Goals -->
+                    <section class="card glass-card">
+                        <div class="card-header">
+                            <h3><i class="fa-solid fa-piggy-bank"></i> Savings Goals</h3>
+                        </div>
+                        <div id="piggybanks-container" class="card-body">
+                            <div class="loading-spinner"></div>
+                        </div>
+                    </section>
+                </div>
+
             </div>
         </main>
     </div>
 
     <!-- App Logic -->
     <script src="app.js?v=3"></script>
+    <script>
+        // --- Resizable Column Divider ---
+        const divider = document.getElementById('col-divider');
+        const colLeft = document.getElementById('col-left');
+        const colRight = document.getElementById('col-right');
+        const layout = document.querySelector('.two-col-layout');
+
+        // Restore saved split from localStorage
+        const savedSplit = localStorage.getItem('dashboardColSplit');
+        if (savedSplit) {
+            colLeft.style.flex = 'none';
+            colLeft.style.width = savedSplit + 'px';
+        }
+
+        let isDragging = false;
+
+        divider.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const layoutRect = layout.getBoundingClientRect();
+            const dividerWidth = divider.offsetWidth;
+            let newLeftWidth = e.clientX - layoutRect.left - dividerWidth / 2;
+            const minWidth = 200;
+            const maxWidth = layoutRect.width - dividerWidth - minWidth;
+            newLeftWidth = Math.max(minWidth, Math.min(newLeftWidth, maxWidth));
+            colLeft.style.flex = 'none';
+            colLeft.style.width = newLeftWidth + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            localStorage.setItem('dashboardColSplit', colLeft.offsetWidth);
+        });
+
+        // Touch support for mobile drag
+        divider.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            e.preventDefault();
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const layoutRect = layout.getBoundingClientRect();
+            const dividerWidth = divider.offsetWidth;
+            let newLeftWidth = touch.clientX - layoutRect.left - dividerWidth / 2;
+            const minWidth = 200;
+            const maxWidth = layoutRect.width - dividerWidth - minWidth;
+            newLeftWidth = Math.max(minWidth, Math.min(newLeftWidth, maxWidth));
+            colLeft.style.flex = 'none';
+            colLeft.style.width = newLeftWidth + 'px';
+        }, { passive: false });
+
+        document.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            localStorage.setItem('dashboardColSplit', colLeft.offsetWidth);
+        });
+    </script>
 </body>
 </html>
