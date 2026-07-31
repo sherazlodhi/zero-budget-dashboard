@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Dashboard | Zero-Based</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css?v=3">
+</head>
+<body>
+    <!-- Settings Modal for API Configuration -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content glass-card">
+            <h2><i class="fa-solid fa-gear"></i> Connect to Firefly III</h2>
+            <p>Please enter your local Firefly III API details to securely pull your financial data. This is saved only in your browser.</p>
+            <form id="settings-form">
+                <div class="input-group">
+                    <label for="apiUrl">API URL</label>
+                    <input type="url" id="apiUrl" placeholder="e.g. http://192.168.87.112:8011" required>
+                </div>
+                <div class="input-group">
+                    <label for="apiToken">Personal Access Token</label>
+                    <input type="password" id="apiToken" placeholder="Enter your secret token" required>
+                </div>
+                
+                <div class="input-group" id="settings-accounts-group" style="display: none;">
+                    <label>Included Accounts</label>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">Uncheck accounts to exclude them from the Zero-Based math.</p>
+                    <div id="settings-accounts-list" class="checkbox-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Save Settings</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar glass-card">
+            <div class="logo">
+                <i class="fa-solid fa-wallet gradient-text"></i>
+                <h2>ZeroBudget</h2>
+            </div>
+            
+            <div class="month-selector">
+                <button id="prev-month" class="icon-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                <span id="current-month-display">Loading...</span>
+                <button id="next-month" class="icon-btn"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+
+            <nav>
+                <ul>
+                    <li class="active"><a href="#"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+                    <li><a href="#" id="open-settings"><i class="fa-solid fa-sliders"></i> Settings</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Dashboard Content -->
+        <main class="dashboard-content">
+            <header>
+                <h1>Financial Overview</h1>
+                <p class="subtitle">Your money, mathematically zeroed out.</p>
+            </header>
+
+            <div class="bento-grid">
+                
+                <!-- Account Overview -->
+                <section class="card accounts-card glass-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-building-columns"></i> Asset Accounts</h3>
+                    </div>
+                    <div id="accounts-container" class="card-body">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </section>
+
+                <!-- Upcoming Bills -->
+                <section class="card bills-card glass-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-file-invoice-dollar"></i> Upcoming Bills</h3>
+                    </div>
+                    <div id="bills-container" class="card-body">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </section>
+
+                <!-- Budgets & Categories -->
+                <section class="card budgets-card glass-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-chart-simple"></i> Monthly Budgets</h3>
+                        <span class="badge" id="budget-total-spent">0.00 AED Spent</span>
+                    </div>
+                    <div id="budgets-container" class="card-body">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </section>
+
+                <!-- Savings Goals -->
+                <section class="card piggybanks-card glass-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-piggy-bank"></i> Savings Goals</h3>
+                    </div>
+                    <div id="piggybanks-container" class="card-body">
+                        <div class="loading-spinner"></div>
+                    </div>
+                </section>
+                
+            </div>
+        </main>
+    </div>
+
+    <!-- App Logic -->
+    <script src="app.js?v=3"></script>
+</body>
+</html>
