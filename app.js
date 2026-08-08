@@ -23,7 +23,8 @@ const dom = {
     budgetsContainer: document.getElementById('budgets-container'),
     piggybanksContainer: document.getElementById('piggybanks-container'),
     billsContainer: document.getElementById('bills-container'),
-    budgetTotalSpent: document.getElementById('budget-total-spent')
+    budgetTotalSpent: document.getElementById('budget-total-spent'),
+    spendGridContainer: document.getElementById('spend-grid-container')
 };
 
 // --- Initialization ---
@@ -512,6 +513,89 @@ async function fetchAllData() {
     
     billsHtml += `</tbody></table></div>`;
     dom.billsContainer.innerHTML = billsHtml;
+
+    // 5. Kick off spend grid (runs independently, doesn't block the main render)
+    fetchSpendGrid(accounts);
+}
+
+// --- Monthly Spend by Account Grid ---
+async function fetchSpendGrid(accounts) {
+    if (!dom.spendGridContainer) return;
+    dom.spendGridContainer.innerHTML = '<div class="loading-spinner"></div>';
+
+    // Build last 6 months list (oldest to newest)
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(1);
+        d.setMonth(d.getMonth() - i);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const lastDay = new Date(y, d.getMonth() + 1, 0).getDate();
+        months.push({
+            label: d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+            start: `${y}-${m}-01`,
+            end: `${y}-${m}-${lastDay}`
+        });
+    }
+
+    // Only show non-excluded asset accounts
+    const visibleAccounts = accounts.filter(a => !state.ignoredAccounts.includes(a.id));
+
+    // Fetch spend per account per month in parallel
+    const allFetches = visibleAccounts.map(acc =>
+        months.map(mo =>
+            fetch(`${state.url}/api/v1/accounts/${acc.id}/transactions?start=${mo.start}&end=${mo.end}&type=withdrawal&limit=500`, {
+                headers: { 'Authorization': `Bearer ${state.token}`, 'Accept': 'application/json' }
+            }).then(r => r.ok ? r.json() : { data: [] })
+              .then(json => {
+                  const txList = json.data || [];
+                  let total = 0;
+                  txList.forEach(tx => {
+                      const t = tx.attributes.transactions && tx.attributes.transactions[0];
+                      if (t && String(t.source_id) === String(acc.id)) {
+                          total += parseFloat(t.amount || 0);
+                      }
+                  });
+                  return total;
+              })
+              .catch(() => 0)
+        )
+    );
+
+    // results[accIndex][monthIndex] = spend amount
+    const results = await Promise.all(allFetches.map(row => Promise.all(row)));
+
+    // Column totals (per month) and row totals (per account)
+    const monthTotals = months.map((_, mi) => results.reduce((sum, row) => sum + row[mi], 0));
+    const accountTotals = results.map(row => row.reduce((s, v) => s + v, 0));
+    const grandTotal = accountTotals.reduce((s, v) => s + v, 0);
+
+    const fmt = n => n > 0 ? n.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0}) : '<span style="color:var(--text-muted)">—</span>';
+
+    let html = `<div class="table-container"><table class="data-table">
+        <thead><tr>
+            <th>Account</th>
+            ${months.map(m => `<th class="num">${m.label}</th>`).join('')}
+            <th class="num" style="color: var(--accent-violet);">Total</th>
+        </tr></thead><tbody>`;
+
+    visibleAccounts.forEach((acc, ai) => {
+        html += `<tr>
+            <td style="font-weight:500">${acc.attributes.name}</td>
+            ${results[ai].map(amt => `<td class="num">${fmt(amt)}</td>`).join('')}
+            <td class="num" style="font-weight:700; color:var(--accent-violet);">${accountTotals[ai].toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</td>
+        </tr>`;
+    });
+
+    html += `<tr style="border-top:2px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04);">
+        <td style="font-weight:700; color:var(--text-main);">Total</td>
+        ${monthTotals.map(t => `<td class="num" style="font-weight:700; color:var(--accent-emerald);">${t.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</td>`).join('')}
+        <td class="num" style="font-weight:700; color:var(--accent-cyan); font-size:1rem;">${grandTotal.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</td>
+    </tr>`;
+
+    html += `</tbody></table></div>`;
+    dom.spendGridContainer.innerHTML = html;
 }
 
 // Start app
